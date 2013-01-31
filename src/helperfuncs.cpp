@@ -356,7 +356,7 @@ bool IsIdentHandler::Call(const char* n)
 			continue;
 		}
 
-		if (((*i >= '0') && (*i <= '9')) || (*i == '-') || (*i == '.'))
+		if (((*i >= '0') && (*i <= '9')) || (*i == '-') || (*i == '.') || (*i == '@'))
 		{
 			continue;
 		}
