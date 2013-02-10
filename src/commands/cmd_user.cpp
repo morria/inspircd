@@ -58,22 +58,25 @@ CmdResult CommandUser::HandleLocal(const std::vector<std::string>& parameters, L
 		{
             size_t split = parameters[0].find("@");
 
-            if (split == std::string::npos) {
-                user->WriteNumeric(461, "%s USER :Your username must be a valid email address", user->nick.c_str());
-                return CMD_FAILURE;
-            }
+            if (split != std::string::npos)
+            {
+                std::string found_user = parameters[0].substr(0, split);
+                std::string found_host = parameters[0].substr(split + 1, std::string::npos);
 
-            std::string found_user = parameters[0].substr(0, split);
-            std::string found_host = parameters[0].substr(split + 1, std::string::npos);
+                user->ChangeIdent(found_user.c_str());
+                user->dhost = found_host;
+                user->host = found_host;
+            }
+            else
+            {
+                user->ChangeIdent(parameters[0].c_str());
+            }
 
 			/*
 			 * The ident field is IDENTMAX+2 in size to account for +1 for the optional
 			 * ~ character, and +1 for null termination, therefore we can safely use up to
 			 * IDENTMAX here.
 			 */
-			user->ChangeIdent(found_user.c_str());
-            user->dhost = found_host;
-            user->host = found_host;
 			user->fullname.assign(parameters[3].empty() ? "No info" : parameters[3], 0, ServerInstance->Config->Limits.MaxGecos);
 			user->registered = (user->registered | REG_USER);
 		}
