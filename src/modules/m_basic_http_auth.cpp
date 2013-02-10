@@ -17,6 +17,9 @@ class ModuleBasicHttpAuth : public Module
 
     /** The message sent to the client upon auth failure */
     std::string killreason;
+
+    /** The URL to go to in order to register for an account */
+    std::string registration_url;
  
   public:
 	ModuleBasicHttpAuth()
@@ -37,6 +40,7 @@ class ModuleBasicHttpAuth : public Module
 		ConfigTag* conf = ServerInstance->Config->ConfValue("basic_http_auth");
 		url = conf->getString("url");
 		killreason = conf->getString("killreason");
+        registration_url = conf->getString("registration_url");
 	}
 
 	virtual void OnUserConnect(LocalUser *user)
@@ -70,7 +74,9 @@ class ModuleBasicHttpAuth : public Module
     bool checkCredentials(LocalUser *user) {
         if (user->password.empty())
 		{
-            ServerInstance->SNO->WriteToSnoMask('c', "Forbidden connection from %s (No password provided)", user->GetFullRealHost().c_str());
+            ServerInstance->SNO->WriteToSnoMask('c', "Forbidden connection from %s (No password provided). Please register at %s.",
+                user->GetFullRealHost().c_str(),
+                registration_url.c_str());
 			return false;
 		}
 
@@ -87,11 +93,16 @@ class ModuleBasicHttpAuth : public Module
             return true;
         }
 
-        ServerInstance->SNO->WriteToSnoMask('c',
-            "Forbidden connection from %s with username %s and code %L",
-            user->GetFullRealHost().c_str(),
-            username.c_str(),
-            http_code);
+        if (401 == http_code) {
+            ServerInstance->SNO->WriteToSnoMask('c',
+                "Authentication failed for %s. Visit %s if you've forgotten your password.",
+                username.c_str(),
+                registration_url.c_str());
+        } else {
+            ServerInstance->SNO->WriteToSnoMask('c',
+                "Error during authentication. Visit %s for help.",
+                registration_url.c_str());
+        }
 
         return false;
     }
@@ -113,12 +124,12 @@ class ModuleBasicHttpAuth : public Module
 
         if (curl_code == CURLE_OK) {
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
-            curl_easy_cleanup(curl);
         }
+
+        curl_easy_cleanup(curl);
 
         return http_code;
     }
-
 };
 
 MODULE_INIT(ModuleBasicHttpAuth)
