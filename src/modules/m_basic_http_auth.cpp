@@ -44,8 +44,8 @@ class ModuleBasicHttpAuth : public Module
 	}
 
 	virtual void OnUserConnect(LocalUser *user)
-    {
-    }
+  {
+  }
 
 	ModResult OnUserRegister(LocalUser* user)
 	{
@@ -71,38 +71,39 @@ class ModuleBasicHttpAuth : public Module
 	}
 
   private: 
-    bool checkCredentials(LocalUser *user) {
-        if (user->password.empty())
+  bool checkCredentials(LocalUser *user)
+  {
+    if (user->password.empty())
 		{
-            ServerInstance->SNO->WriteToSnoMask('c', "Forbidden connection from %s (No password provided). Please register at %s.",
-                user->GetFullRealHost().c_str(),
-                registration_url.c_str());
-			return false;
+      ServerInstance->SNO->WriteToSnoMask('c', "Forbidden connection from %s (No password provided). Please register at %s.",
+        user->GetFullRealHost().c_str(),
+        registration_url.c_str());
+      return false;
 		}
 
-        // Form a username from the username and host in order
-        // to reconstruct their email address. This is a hack
-        // specific to collapse.io
-        std::string username =
-            user->ident + "@" + user->host;
+    // Form a username from the username and host in order
+    // to reconstruct their email address. This is a hack
+    // specific to collapse.io
+    std::string username =
+        user->ident + "@" + user->host;
 
-        long http_code =
-            authenticationStatus(username, user->password);
+    long http_code =
+        authenticationStatus(username, user->password);
 
-        if (200 == http_code) {
-            return true;
-        }
+    if (200 == http_code) {
+        return true;
+    }
 
-        if (401 == http_code) {
-            ServerInstance->SNO->WriteToSnoMask('c',
-                "Authentication failed for %s. Visit %s if you've forgotten your password.",
-                username.c_str(),
-                registration_url.c_str());
-        } else {
-            ServerInstance->SNO->WriteToSnoMask('c',
-                "Error during authentication. Visit %s for help.",
-                registration_url.c_str());
-        }
+    if (401 == http_code) {
+        ServerInstance->SNO->WriteToSnoMask('c',
+            "Authentication failed for %s. Visit %s if you've forgotten your password.",
+            username.c_str(),
+            registration_url.c_str());
+    } else {
+        ServerInstance->SNO->WriteToSnoMask('c',
+            "Error during authentication with code (%d). Visit %s for help.",
+            (int)http_code, registration_url.c_str());
+    }
 
         return false;
     }
@@ -119,11 +120,17 @@ class ModuleBasicHttpAuth : public Module
         curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, 30000);
         curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS, 15000);
         curl_easy_setopt(curl, CURLOPT_USERPWD, creds.c_str());
+        curl_easy_setopt(curl, CURLOPT_NOBODY, 1);
+        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1);
 
         curl_code = curl_easy_perform(curl);
 
         if (curl_code == CURLE_OK) {
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+        } else {
+          ServerInstance->Logs->Log("m_basic_http_auth", DEFAULT,
+                                    "curl failed with curl_code %d",
+                                    (int)curl_code);
         }
 
         curl_easy_cleanup(curl);
