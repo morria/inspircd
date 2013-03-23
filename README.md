@@ -19,3 +19,11 @@ many different users.
 * [Website](http://inspircd.github.com)
 * [GitHub]( https://github.com/inspircd)
 * [IRC](irc://irc.chatspike.net/inspircd)
+
+
+### Installing
+    sudo yum install gcc-c++ openssl-devel libcurl-devel
+    ./configure
+    make
+    make install
+    # and then edit configs in run/conf
