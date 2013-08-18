@@ -75,7 +75,7 @@ all: inspircd commands modules
 
 END
 	my(@core_deps, @cmdlist, @modlist);
-	for my $file (<*.cpp>, <modes/*.cpp>, <socketengines/*.cpp>, "threadengines/threadengine_pthread.cpp") {
+	for my $file (<*.c>, <*.cpp>, <modes/*.cpp>, <socketengines/*.cpp>, "threadengines/threadengine_pthread.cpp") {
 		my $out = find_output $file;
 		dep_cpp $file, $out, 'gen-o';
 		next if $file =~ m#^socketengines/# && $file ne "socketengines/$ENV{SOCKETENGINE}.cpp";
@@ -141,7 +141,7 @@ all: inspircd
 
 END
 	my(@deps, @srcs);
-	for my $file (<*.cpp>, <modes/*.cpp>, <socketengines/*.cpp>, <commands/*.cpp>,
+	for my $file (<*.c>, <*.cpp>, <modes/*.cpp>, <socketengines/*.cpp>, <commands/*.cpp>,
 			<modules/*.cpp>, <modules/m_*/*.cpp>, "threadengines/threadengine_pthread.cpp") {
 		my $out = find_output $file, 1;
 		if ($out =~ m#obj/([^/]+)/[^/]+.o$#) {
@@ -172,7 +172,7 @@ END
 
 sub find_output {
 	my($file, $static) = @_;
-	my($path,$base) = $file =~ m#^((?:.*/)?)([^/]+)\.cpp# or die "Bad file $file";
+	my($path,$base) = $file =~ m#^((?:.*/)?)([^/]+)\.c(pp)?# or die "Bad file $file";
 	if ($path eq 'modules/' || $path eq 'commands/') {
 		return $static ? "obj/$base.o" : "modules/$base.so";
 	} elsif ($path eq '' || $path eq 'modes/' || $path =~ /^[a-z]+engines\/$/) {
