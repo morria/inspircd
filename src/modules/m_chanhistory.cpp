@@ -173,8 +173,13 @@ class ModuleChanHistory : public Module
 
 		for(std::deque<HistoryItem>::iterator i = list->lines.begin(); i != list->lines.end(); ++i)
 		{
-			if (i->ts >= mintime)
-				memb->user->Write(timestring(i->ts) + ": " + i->line);
+			if (i->ts >= mintime) {
+        if (timestamps) {
+          memb->user->Write(timestring(i->ts) + ": " + i->line);
+        } else {
+          memb->user->Write(i->line);
+        }
+      }
 		}
 	}
 
