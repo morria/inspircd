@@ -111,6 +111,7 @@ class ModuleChanHistory : public Module
 {
 	HistoryMode m;
 	bool sendnotice;
+	bool timestamps;
  public:
 	ModuleChanHistory() : m(this)
 	{
@@ -131,6 +132,7 @@ class ModuleChanHistory : public Module
 		ConfigTag* tag = ServerInstance->Config->ConfValue("chanhistory");
 		m.maxlines = tag->getInt("maxlines", 50);
 		sendnotice = tag->getBool("notice", true);
+		timestamps = tag->getBool("timestamps", false);
 	}
 
 	void OnUserMessage(User* user,void* dest,int target_type, const std::string &text, char status, const CUList&)
@@ -172,7 +174,7 @@ class ModuleChanHistory : public Module
 		for(std::deque<HistoryItem>::iterator i = list->lines.begin(); i != list->lines.end(); ++i)
 		{
 			if (i->ts >= mintime)
-				memb->user->Write(i->line);
+				memb->user->Write(timestring(i->ts) + ": " + i->line);
 		}
 	}
 
@@ -180,6 +182,15 @@ class ModuleChanHistory : public Module
 	{
 		return Version("Provides channel history replayed on join", VF_VENDOR);
 	}
+
+	std::string timestring(time_t time)
+	{
+		char timebuf[60];
+		struct tm *mytime = gmtime(&time);
+		strftime(timebuf, 59, "%Y-%m-%d %H:%M:%S UTC (%s)", mytime);
+		return std::string(timebuf);
+	}
+
 };
 
 MODULE_INIT(ModuleChanHistory)
