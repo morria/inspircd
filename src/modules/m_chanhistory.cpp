@@ -176,7 +176,7 @@ class ModuleChanHistory : public Module
 			if (i->ts >= mintime) {
         if (timestamps) {
           char timebuf[60];
-          strftime(timebuf, 59, "%H:%M UTC", gmtime(&(i->ts)))
+          strftime(timebuf, 59, "%H:%M UTC", gmtime(&(i->ts)));
           memb->user->Write(i->line + " [from " + timebuf + "]");
         } else {
           memb->user->Write(i->line);
