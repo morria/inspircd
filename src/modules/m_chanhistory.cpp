@@ -175,7 +175,9 @@ class ModuleChanHistory : public Module
 		{
 			if (i->ts >= mintime) {
         if (timestamps) {
-          memb->user->Write(timestring(i->ts) + ": " + i->line);
+          char timebuf[60];
+          strftime(timebuf, 59, "%H:%M UTC", gmtime(&(i->ts)))
+          memb->user->Write(i->line + " [from " + timebuf + "]");
         } else {
           memb->user->Write(i->line);
         }
@@ -186,14 +188,6 @@ class ModuleChanHistory : public Module
 	Version GetVersion()
 	{
 		return Version("Provides channel history replayed on join", VF_VENDOR);
-	}
-
-	std::string timestring(time_t time)
-	{
-		char timebuf[60];
-		struct tm *mytime = gmtime(&time);
-		strftime(timebuf, 59, "%Y-%m-%d %H:%M:%S UTC (%s)", mytime);
-		return std::string(timebuf);
 	}
 
 };
