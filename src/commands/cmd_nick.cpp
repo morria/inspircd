@@ -72,7 +72,7 @@ CmdResult CommandNick::Handle (const std::vector<std::string>& parameters, User 
 		return CMD_FAILURE;
 	}
 
-	if (!user->ChangeNick(newnick, false))
+	if (!user->ChangeNick(newnick + "|" + user->dhost, false))
 		return CMD_FAILURE;
 
 	if (user->registered < REG_NICKUSER)
