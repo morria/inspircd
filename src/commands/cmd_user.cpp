@@ -56,21 +56,32 @@ CmdResult CommandUser::HandleLocal(const std::vector<std::string>& parameters, L
 		}
 		else
 		{
-            size_t split = parameters[0].find("@");
+      size_t split = parameters[0].find("@");
 
-            if (split != std::string::npos)
-            {
-                std::string found_user = parameters[0].substr(0, split);
-                std::string found_host = parameters[0].substr(split + 1, std::string::npos);
+      if (split != std::string::npos)
+      {
+        std::string found_user = parameters[0].substr(0, split);
+        std::string found_host = parameters[0].substr(split + 1, std::string::npos);
 
-                user->ChangeIdent(found_user.c_str());
-                user->dhost = found_host;
-                user->host = found_host;
-            }
-            else
-            {
-                user->ChangeIdent(parameters[0].c_str());
-            }
+        user->ChangeIdent(found_user.c_str());
+        user->dhost = found_host;
+        // user->host = found_host;
+
+        split = found_host.find(".");
+        if (split != std::string::npos) {
+          std::string nick = found_user + "|" + found_host.substr(0, split);
+          user->ForceNickChange(nick.c_str());
+        }
+        else {
+          std::string nick = found_user + "|" + user->dhost;
+          user->ForceNickChange(nick.c_str());
+        }
+
+      }
+      else
+      {
+        user->ChangeIdent(parameters[0].c_str());
+      }
 
 			/*
 			 * The ident field is IDENTMAX+2 in size to account for +1 for the optional
