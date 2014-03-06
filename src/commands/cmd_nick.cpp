@@ -72,13 +72,7 @@ CmdResult CommandNick::Handle (const std::vector<std::string>& parameters, User 
 		return CMD_FAILURE;
 	}
 
-  size_t split = user->dhost.find(".");
-  std::string nick = newnick + "|" + user->dhost;
-  if (split != std::string::npos) {
-    nick = newnick + "|" + user->dhost.substr(0, split);
-  }
-
-	if (!user->ChangeNick(nick, false))
+	if (!user->ChangeNick(newnick, false))
 		return CMD_FAILURE;
 
 	if (user->registered < REG_NICKUSER)
